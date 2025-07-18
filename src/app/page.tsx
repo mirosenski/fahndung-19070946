@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Plus, AlertTriangle, User, MapPin, Trash2, Edit, Eye, Database, TestTube } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Search, Plus, AlertTriangle, User, MapPin, Trash2, Edit, Eye, Database, TestTube, LogIn } from 'lucide-react';
 import { api } from '~/trpc/react';
 
 // Typen für Fahndungen
@@ -21,6 +22,7 @@ export default function Home() {
   const [showTestPanel, setShowTestPanel] = useState(false);
   const [testResult, setTestResult] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // tRPC Queries und Mutations
   const { data: investigations, refetch: refetchInvestigations } = api.post.getInvestigations.useQuery({ 
@@ -147,6 +149,14 @@ export default function Home() {
     }
   };
 
+  const handleLogin = () => {
+    router.push('/login');
+  };
+
+  const handleDashboard = () => {
+    router.push('/dashboard');
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
@@ -165,9 +175,19 @@ export default function Home() {
                 <TestTube className="h-4 w-4" />
                 <span>Test-Panel</span>
               </button>
-              <button className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors">
-                <Plus className="h-4 w-4" />
-                <span>Neue Fahndung</span>
+              <button 
+                onClick={handleDashboard}
+                className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
+              >
+                <User className="h-4 w-4" />
+                <span>Dashboard</span>
+              </button>
+              <button 
+                onClick={handleLogin}
+                className="flex items-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700 transition-colors"
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Anmelden</span>
               </button>
             </div>
           </div>
