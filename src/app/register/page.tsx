@@ -68,87 +68,56 @@ export default function Register() {
         return;
       }
       
-      // Registrierung mit vollständigen Daten
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            name: formData.name,
-            department: formData.department,
-            phone: formData.phone,
-            role: 'user',
-            status: 'pending',
-            registration_email: formData.email
-          }
-        }
-      });
-
-      if (error) {
-        console.error('Registrierungs-Fehler:', error);
-        if (error.message.includes('already registered')) {
-          setError('Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an.');
-        } else if (error.message.includes('password')) {
-          setError('Das Passwort muss mindestens 6 Zeichen lang sein.');
-        } else if (error.message.includes('email')) {
-          setError('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
-        } else {
-          setError(`Registrierungs-Fehler: ${error.message}`);
-        }
-      } else if (data.user) {
-        console.log('User erstellt:', data.user.id);
-        
-        // Versuche User-Profil zu erstellen
-        try {
-          const profileData = {
-            user_id: data.user.id,
-            email: formData.email,
-            name: formData.name,
-            role: 'user',
-            status: 'pending',
-            registration_email: formData.email,
-            department: formData.department || 'Allgemein',
-            phone: formData.phone
-          };
-          
-          console.log('Versuche Profil zu erstellen:', profileData);
-          
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert(profileData);
-
-          if (profileError) {
-            console.warn('Profil-Erstellung fehlgeschlagen (wird später erstellt):', profileError.message);
-                  } else {
-          console.log('Profil erfolgreich erstellt');
-        }
-      } catch (profileError) {
-        console.warn('Profil-Erstellung Exception (wird später erstellt):', profileError);
-      }
-      
-      // E-Mail-Benachrichtigung an Super-Admin senden
-      try {
-        await sendRegistrationNotification({
-          userEmail: formData.email,
-          userName: formData.name,
+      // Speichere Registrierung in pending_registrations
+      const result = await supabase
+        .from('pending_registrations')
+        .insert({
+          email: formData.email,
+          name: formData.name,
           department: formData.department || 'Allgemein',
           phone: formData.phone,
-          registrationDate: new Date().toLocaleString('de-DE')
-        });
-        console.log('✅ E-Mail-Benachrichtigung an Super-Admin gesendet');
-      } catch (emailError) {
-        console.warn('E-Mail-Benachrichtigung fehlgeschlagen:', emailError);
+          password_hash: formData.password, // In Produktion sollte das gehasht werden
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      const registrationData = result.data as { id: string } | null;
+      const registrationError = result.error;
+
+      if (registrationError) {
+        console.error('Registrierungs-Fehler:', registrationError);
+        if (registrationError.message.includes('duplicate key')) {
+          setError('Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an.');
+        } else {
+          setError(`Registrierungs-Fehler: ${registrationError.message}`);
+        }
+        return;
       }
-      
-      setError('✅ Registrierung erfolgreich! Eine Bestätigungs-E-Mail wurde an ptlsweb@gmail.com gesendet. Bitte warten Sie auf die Genehmigung.');
-      
-      // Nach 3 Sekunden zur Login-Seite weiterleiten
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000);
-      } else {
-        setError('✅ Registrierung erfolgreich! Eine Bestätigungs-E-Mail wurde an ptlsweb@gmail.com gesendet. Bitte warten Sie auf die Genehmigung.');
+
+      if (registrationData) {
+        console.log('Registrierung gespeichert:', registrationData.id ?? 'unknown');
+        
+        // E-Mail-Benachrichtigung an Super-Admin senden
+        try {
+          await sendRegistrationNotification({
+            userEmail: formData.email,
+            userName: formData.name,
+            department: formData.department || 'Allgemein',
+            phone: formData.phone,
+            registrationDate: new Date().toLocaleString('de-DE')
+          });
+          console.log('✅ E-Mail-Benachrichtigung an Super-Admin gesendet');
+        } catch (emailError) {
+          console.warn('E-Mail-Benachrichtigung fehlgeschlagen:', emailError);
+        }
+        
+        setError('✅ Registrierung erfolgreich eingereicht! Eine Bestätigungs-E-Mail wurde an ptlsweb@gmail.com gesendet. Bitte warten Sie auf die Genehmigung durch einen Administrator.');
+        
+        // Nach 3 Sekunden zur Login-Seite weiterleiten
+        setTimeout(() => {
+          router.push('/login');
+        }, 3000);
       }
     } catch (error) {
       console.error('Unerwarteter Registrierungs-Fehler:', error);

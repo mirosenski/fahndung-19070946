@@ -98,10 +98,10 @@ export default function DebugPage() {
                 Abmelden
               </button>
             </div>
-            {sessionTest && (
+            {sessionTest !== null && (
               <div className="mt-4 p-3 rounded-lg bg-blue-500/20 text-blue-400">
                 <pre className="text-xs overflow-auto">
-                  {JSON.stringify(sessionTest as Record<string, unknown>, null, 2) as string}
+                  {JSON.stringify(sessionTest, null, 2)}
                 </pre>
               </div>
             )}

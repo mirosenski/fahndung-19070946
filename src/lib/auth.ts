@@ -589,7 +589,7 @@ export const getAdminActions = async (): Promise<AdminAction[]> => {
       return [];
     }
 
-    return data || [];
+    return (data as AdminAction[]) ?? [];
   } catch (error) {
     console.error('❌ Fehler beim Abrufen der Admin-Aktionen:', error);
     return [];
@@ -611,7 +611,7 @@ const logAdminAction = async (actionType: string, targetUserId?: string, reason?
         action_type: actionType,
         target_user_id: targetUserId,
         description: reason,
-        metadata: metadata || {}
+        metadata: metadata ?? {}
       });
   } catch (error) {
     console.error('❌ Fehler beim Loggen der Admin-Aktion:', error);
@@ -631,7 +631,7 @@ export const logUserActivity = async (activityType: string, description?: string
         user_id: currentUser.user.id,
         activity_type: activityType,
         description,
-        metadata: metadata || {}
+        metadata: metadata ?? {}
       });
   } catch (error) {
     console.error('❌ Fehler beim Loggen der Benutzeraktivität:', error);
