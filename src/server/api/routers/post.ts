@@ -139,7 +139,7 @@ export const postRouter = createTRPCRouter({
     }))
     .mutation(async ({ ctx, input }): Promise<Investigation> => {
       try {
-        const { data, error } = await ctx.db.investigations()
+        const result = await ctx.db.investigations()
           .insert({
             title: input.title,
             description: input.description,
@@ -152,11 +152,11 @@ export const postRouter = createTRPCRouter({
           .select()
           .single();
 
-        if (error) {
-          throw new Error(`Fehler beim Erstellen der Fahndung: ${error.message}`);
+        if (result.error) {
+          throw new Error(`Fehler beim Erstellen der Fahndung: ${result.error.message}`);
         }
 
-        return data as Investigation;
+        return result.data as Investigation;
       } catch (error) {
         console.warn('Supabase nicht verfügbar, Mock-Erstellung:', error);
         // Mock-Erstellung mit UUID
@@ -190,17 +190,17 @@ export const postRouter = createTRPCRouter({
           throw new Error('ID ist erforderlich für Updates');
         }
 
-        const { data, error } = await ctx.db.investigations()
+        const result = await ctx.db.investigations()
           .update(updates)
           .eq('id', id)
           .select()
           .single();
 
-        if (error) {
-          throw new Error(`Fehler beim Aktualisieren der Fahndung: ${error.message}`);
+        if (result.error) {
+          throw new Error(`Fehler beim Aktualisieren der Fahndung: ${result.error.message}`);
         }
 
-        return data as Investigation;
+        return result.data as Investigation;
       } catch (error) {
         console.warn('Supabase nicht verfügbar, Mock-Update:', error);
         // Mock-Update
@@ -283,16 +283,16 @@ export const postRouter = createTRPCRouter({
     }))
     .mutation(async ({ ctx, input }): Promise<InvestigationImage> => {
       try {
-        const { data, error } = await ctx.db.investigationImages()
+        const result = await ctx.db.investigationImages()
           .insert(input)
           .select()
           .single();
 
-        if (error) {
-          throw new Error(`Fehler beim Hinzufügen des Bildes: ${error.message}`);
+        if (result.error) {
+          throw new Error(`Fehler beim Hinzufügen des Bildes: ${result.error.message}`);
         }
 
-        return data as InvestigationImage;
+        return result.data as InvestigationImage;
       } catch (error) {
         console.warn('Supabase nicht verfügbar, Mock-Bild-Erstellung:', error);
         // Mock-Bild-Erstellung mit UUID

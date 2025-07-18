@@ -24,7 +24,7 @@ export default function Login() {
         return;
       }
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -34,7 +34,7 @@ export default function Login() {
       } else {
         router.push('/');
       }
-    } catch (err) {
+    } catch {
       setError('Ein unerwarteter Fehler ist aufgetreten');
     } finally {
       setLoading(false);
@@ -52,7 +52,7 @@ export default function Login() {
         return;
       }
       
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -62,7 +62,7 @@ export default function Login() {
       } else {
         setError('Bitte überprüfe deine E-Mail für die Bestätigung');
       }
-    } catch (err) {
+    } catch {
       setError('Ein unerwarteter Fehler ist aufgetreten');
     } finally {
       setLoading(false);

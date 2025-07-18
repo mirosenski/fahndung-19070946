@@ -1,19 +1,45 @@
 import { supabase } from '~/lib/supabase';
 
+// Typen für bessere Typsicherheit
+interface Investigation {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface InvestigationImage {
+  id: string;
+  investigation_id: string;
+  file_name: string;
+  file_path: string;
+  file_size?: number;
+  mime_type?: string;
+  description?: string;
+  uploaded_at: string;
+}
+
 export default async function Dashboard() {
   // Lade Fahndungen aus Supabase
   const { data: investigations, error: investigationsError } = await supabase
     ?.from('investigations')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(10) || { data: null, error: null };
+    .limit(10) ?? { data: null, error: null };
 
   // Lade Bilder aus Supabase
   const { data: images, error: imagesError } = await supabase
     ?.from('investigation_images')
     .select('*')
     .order('uploaded_at', { ascending: false })
-    .limit(10) || { data: null, error: null };
+    .limit(10) ?? { data: null, error: null };
+
+  // Typisierte Daten
+  const typedInvestigations = (investigations as Investigation[]) ?? [];
+  const typedImages = (images as InvestigationImage[]) ?? [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
@@ -29,9 +55,9 @@ export default async function Dashboard() {
               <div className="text-red-400">
                 Fehler beim Laden der Fahndungen: {investigationsError.message}
               </div>
-            ) : investigations && investigations.length > 0 ? (
+            ) : typedInvestigations.length > 0 ? (
               <div className="space-y-4">
-                {investigations.map((investigation) => (
+                {typedInvestigations.map((investigation) => (
                   <div
                     key={investigation.id}
                     className="bg-white/5 rounded-lg p-4 border border-white/10"
@@ -62,9 +88,9 @@ export default async function Dashboard() {
               <div className="text-red-400">
                 Fehler beim Laden der Bilder: {imagesError.message}
               </div>
-            ) : images && images.length > 0 ? (
+            ) : typedImages.length > 0 ? (
               <div className="space-y-4">
-                {images.map((image) => (
+                {typedImages.map((image) => (
                   <div
                     key={image.id}
                     className="bg-white/5 rounded-lg p-4 border border-white/10"
@@ -95,13 +121,13 @@ export default async function Dashboard() {
             <div>
               <h3 className="text-lg font-medium text-white mb-2">Fahndungen (JSON)</h3>
               <pre className="bg-black/50 rounded-lg p-4 text-xs text-green-400 overflow-auto max-h-64">
-                {JSON.stringify(investigations, null, 2)}
+                {JSON.stringify(typedInvestigations, null, 2)}
               </pre>
             </div>
             <div>
               <h3 className="text-lg font-medium text-white mb-2">Bilder (JSON)</h3>
               <pre className="bg-black/50 rounded-lg p-4 text-xs text-green-400 overflow-auto max-h-64">
-                {JSON.stringify(images, null, 2)}
+                {JSON.stringify(typedImages, null, 2)}
               </pre>
             </div>
           </div>

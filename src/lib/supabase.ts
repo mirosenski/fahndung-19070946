@@ -28,7 +28,9 @@ export const subscribeToInvestigations = (callback: (payload: InvestigationChang
   if (!supabase) {
     console.warn('⚠️ Supabase nicht konfiguriert - Real-time Updates deaktiviert')
     return {
-      unsubscribe: () => {}
+      unsubscribe: () => {
+        console.log('Real-time subscription für Fahndungen beendet (Mock)')
+      }
     }
   }
 
@@ -50,7 +52,9 @@ export const subscribeToMedia = (callback: (payload: MediaChange) => void) => {
   if (!supabase) {
     console.warn('⚠️ Supabase nicht konfiguriert - Real-time Updates deaktiviert')
     return {
-      unsubscribe: () => {}
+      unsubscribe: () => {
+        console.log('Real-time subscription für Medien beendet (Mock)')
+      }
     }
   }
 
