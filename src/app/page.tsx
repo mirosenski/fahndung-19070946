@@ -1,22 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, Plus, AlertTriangle, User, MapPin, Trash2, Edit, Eye, Database, TestTube, LogIn } from 'lucide-react';
-import { api } from '~/trpc/react';
-
-// Typen für Fahndungen
-interface Investigation {
-  id: string;
-  title: string;
-  description?: string;
-  status: string;
-  priority: string;
-  tags?: string[];
-  location?: string;
-  created_at: string;
-  updated_at: string;
-}
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { AlertTriangle, TestTube, User, LogIn, MapPin, Plus } from 'lucide-react'
+import { FahndungCard } from '@/components/fahndung/FahndungCard'
+import type { Fahndung } from '@/types/fahndung'
 
 export default function Home() {
   const [showTestPanel, setShowTestPanel] = useState(false);
@@ -24,138 +12,80 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // tRPC Queries und Mutations
-  const { data: investigations, refetch: refetchInvestigations } = api.post.getInvestigations.useQuery({ 
-    limit: 10, 
-    offset: 0 
-  });
 
-  const createInvestigationMutation = api.post.createInvestigation.useMutation({
-    onSuccess: () => {
-      void refetchInvestigations();
-      setTestResult('✅ Fahndung erfolgreich erstellt!');
-    },
-    onError: (error) => {
-      setTestResult(`❌ Fehler beim Erstellen: ${error.message}`);
-    }
-  });
-
-  const updateInvestigationMutation = api.post.updateInvestigation.useMutation({
-    onSuccess: () => {
-      void refetchInvestigations();
-      setTestResult('✅ Fahndung erfolgreich aktualisiert!');
-    },
-    onError: (error) => {
-      setTestResult(`❌ Fehler beim Aktualisieren: ${error.message}`);
-    }
-  });
-
-  const deleteInvestigationMutation = api.post.deleteInvestigation.useMutation({
-    onSuccess: () => {
-      void refetchInvestigations();
-      setTestResult('✅ Fahndung erfolgreich gelöscht!');
-    },
-    onError: (error) => {
-      setTestResult(`❌ Fehler beim Löschen: ${error.message}`);
-    }
-  });
-
-  // Test-Funktionen
-  const testCreateInvestigation = async () => {
-    setIsLoading(true);
-    setTestResult('🔄 Erstelle Test-Fahndung...');
-    
-    try {
-      await createInvestigationMutation.mutateAsync({
-        title: `Test-Fahndung ${Date.now()}`,
-        description: 'Dies ist eine automatisch erstellte Test-Fahndung',
-        status: 'active',
-        priority: 'medium',
-        tags: ['test', 'automatisch'],
-        location: 'Test-Standort',
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
-      setTestResult(`❌ Fehler: ${errorMessage}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const testUpdateInvestigation = async () => {
-    if (!investigations || investigations.length === 0) {
-      setTestResult('❌ Keine Fahndungen zum Aktualisieren vorhanden');
-      return;
-    }
-
-    setIsLoading(true);
-    setTestResult('🔄 Aktualisiere erste Fahndung...');
-    
-    try {
-      const firstInvestigation = investigations[0] as Investigation;
-      console.log('Updating investigation with ID:', firstInvestigation.id);
-      await updateInvestigationMutation.mutateAsync({
-        id: firstInvestigation.id,
-        title: `${firstInvestigation.title} (Aktualisiert)`,
-        description: 'Diese Fahndung wurde automatisch aktualisiert',
-        priority: 'high',
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
-      console.error('Update error:', error);
-      setTestResult(`❌ Fehler: ${errorMessage}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const testDeleteInvestigation = async () => {
-    if (!investigations || investigations.length === 0) {
-      setTestResult('❌ Keine Fahndungen zum Löschen vorhanden');
-      return;
-    }
-
-    setIsLoading(true);
-    setTestResult('🔄 Lösche letzte Fahndung...');
-    
-    try {
-      const lastInvestigation = investigations[investigations.length - 1] as Investigation;
-      console.log('Deleting investigation with ID:', lastInvestigation.id);
-      await deleteInvestigationMutation.mutateAsync({
-        id: lastInvestigation.id,
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
-      console.error('Delete error:', error);
-      setTestResult(`❌ Fehler: ${errorMessage}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const testSupabaseConnection = async () => {
-    setIsLoading(true);
-    setTestResult('🔄 Teste Supabase-Verbindung...');
-    
-    try {
-      // Teste die Verbindung durch Abrufen der Fahndungen
-      await refetchInvestigations();
-      setTestResult('✅ Supabase-Verbindung erfolgreich!');
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
-      setTestResult(`❌ Supabase-Verbindung fehlgeschlagen: ${errorMessage}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLogin = () => {
-    router.push('/login');
-  };
 
   const handleDashboard = () => {
     router.push('/dashboard');
   };
+
+  const handleLogin = () => {
+    router.push('/auth/login');
+  };
+
+  const handleTestPage = () => {
+    router.push('/test');
+  };
+
+  // Mock Fahndungen für die Demo
+  const mockFahndungen: Fahndung[] = [
+    {
+      id: '1',
+      typ: 'straftaeter',
+      status: 'veroeffentlicht',
+      prioritaet: 'hoch',
+      titel: 'Gesuchter Straftäter in Berlin',
+      kurzbeschreibung: 'Ein gesuchter Straftäter wurde zuletzt in Berlin gesehen. Bitte melden Sie sich bei der Polizei.',
+      beschreibung: 'Der Verdächtige wurde zuletzt in der Nähe des Alexanderplatzes gesehen. Er trägt eine schwarze Jacke und eine Baseballkappe.',
+      ort_name: 'Berlin, Mitte',
+      ort_lat: 52.5200,
+      ort_lng: 13.4050,
+      ort_radius: 5000,
+      erstellt_am: '2024-01-15T10:00:00Z',
+      aktualisiert_am: '2024-01-15T10:00:00Z',
+      veroeffentlicht_von: '2024-01-15T10:00:00Z',
+      erstellt_von: null,
+      veroeffentlicht_bis: null,
+      wizard_data: {}
+    },
+    {
+      id: '2',
+      typ: 'vermisste',
+      status: 'veroeffentlicht',
+      prioritaet: 'dringend',
+      titel: 'Vermisste Person in Hamburg',
+      kurzbeschreibung: 'Eine 25-jährige Frau wird seit gestern vermisst. Sie war zuletzt am Hauptbahnhof gesehen.',
+      beschreibung: 'Die vermisste Person trägt eine rote Jacke und hat blonde Haare. Sie war zuletzt am Hauptbahnhof Hamburg gesehen worden.',
+      ort_name: 'Hamburg, Hauptbahnhof',
+      ort_lat: 53.5511,
+      ort_lng: 9.9937,
+      ort_radius: 3000,
+      erstellt_am: '2024-01-14T08:00:00Z',
+      aktualisiert_am: '2024-01-14T08:00:00Z',
+      veroeffentlicht_von: '2024-01-14T08:00:00Z',
+      erstellt_von: null,
+      veroeffentlicht_bis: null,
+      wizard_data: {}
+    },
+    {
+      id: '3',
+      typ: 'sachen',
+      status: 'veroeffentlicht',
+      prioritaet: 'normal',
+      titel: 'Verlorener Schmuck gefunden',
+      kurzbeschreibung: 'Ein wertvoller Ring wurde im Stadtpark gefunden. Der Besitzer kann sich melden.',
+      beschreibung: 'Ein goldener Ring mit einem Diamanten wurde im Stadtpark München gefunden. Der Ring hat eine Inschrift.',
+      ort_name: 'München, Stadtpark',
+      ort_lat: 48.1351,
+      ort_lng: 11.5820,
+      ort_radius: 1000,
+      erstellt_am: '2024-01-13T15:00:00Z',
+      aktualisiert_am: '2024-01-13T15:00:00Z',
+      veroeffentlicht_von: '2024-01-13T15:00:00Z',
+      erstellt_von: null,
+      veroeffentlicht_bis: null,
+      wizard_data: {}
+    }
+  ];
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -169,8 +99,15 @@ export default function Home() {
             </div>
             <div className="flex items-center space-x-4">
               <button 
-                onClick={() => setShowTestPanel(!showTestPanel)}
+                onClick={handleTestPage}
                 className="flex items-center space-x-2 rounded-lg bg-yellow-600 px-4 py-2 text-white hover:bg-yellow-700 transition-colors"
+              >
+                <TestTube className="h-4 w-4" />
+                <span>Test-Seite</span>
+              </button>
+              <button 
+                onClick={() => setShowTestPanel(!showTestPanel)}
+                className="flex items-center space-x-2 rounded-lg bg-orange-600 px-4 py-2 text-white hover:bg-orange-700 transition-colors"
               >
                 <TestTube className="h-4 w-4" />
                 <span>Test-Panel</span>
@@ -196,61 +133,66 @@ export default function Home() {
 
       {/* Test Panel */}
       {showTestPanel && (
-        <div className="border-b border-white/10 bg-yellow-500/10 backdrop-blur-sm">
+        <div className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white flex items-center space-x-2">
-                <TestTube className="h-5 w-5" />
-                <span>Supabase Test-Panel</span>
-              </h2>
-              <div className="flex items-center space-x-2">
-                <Database className="h-4 w-4 text-blue-400" />
-                <span className="text-sm text-gray-400">Supabase Integration</span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              <button
-                onClick={testSupabaseConnection}
-                disabled={isLoading}
-                className="flex items-center justify-center space-x-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 px-4 py-2 text-white transition-colors"
-              >
-                <Database className="h-4 w-4" />
-                <span>Verbindung testen</span>
-              </button>
-              
-              <button
-                onClick={testCreateInvestigation}
-                disabled={isLoading}
-                className="flex items-center justify-center space-x-2 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 px-4 py-2 text-white transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Erstellen testen</span>
-              </button>
-              
-              <button
-                onClick={testUpdateInvestigation}
-                disabled={isLoading}
-                className="flex items-center justify-center space-x-2 rounded-lg bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-600/50 px-4 py-2 text-white transition-colors"
-              >
-                <Edit className="h-4 w-4" />
-                <span>Aktualisieren testen</span>
-              </button>
-              
-              <button
-                onClick={testDeleteInvestigation}
-                disabled={isLoading}
-                className="flex items-center justify-center space-x-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:bg-red-600/50 px-4 py-2 text-white transition-colors"
-              >
-                <Trash2 className="h-4 w-4" />
-                <span>Löschen testen</span>
-              </button>
-            </div>
-            
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+               <div className="space-y-2">
+                 <h3 className="text-sm font-medium text-white">Test Fahndung erstellen</h3>
+                 <button
+                   onClick={() => {
+                     setTestResult('✅ Demo: Fahndung würde erstellt werden');
+                   }}
+                   className="w-full rounded-lg bg-green-600 px-3 py-2 text-sm text-white hover:bg-green-700 transition-colors"
+                 >
+                   Erstellen (Demo)
+                 </button>
+               </div>
+
+               <div className="space-y-2">
+                 <h3 className="text-sm font-medium text-white">Test Fahndung aktualisieren</h3>
+                 <button
+                   onClick={() => {
+                     setTestResult('✅ Demo: Fahndung würde aktualisiert werden');
+                   }}
+                   className="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700 transition-colors"
+                 >
+                   Aktualisieren (Demo)
+                 </button>
+               </div>
+
+               <div className="space-y-2">
+                 <h3 className="text-sm font-medium text-white">Test Fahndung löschen</h3>
+                 <button
+                   onClick={() => {
+                     setTestResult('✅ Demo: Fahndung würde gelöscht werden');
+                   }}
+                   className="w-full rounded-lg bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700 transition-colors"
+                 >
+                   Löschen (Demo)
+                 </button>
+               </div>
+
+               <div className="space-y-2">
+                 <h3 className="text-sm font-medium text-white">Daten neu laden</h3>
+                 <button
+                   onClick={() => {
+                     setIsLoading(true);
+                     setTimeout(() => {
+                       setIsLoading(false);
+                       setTestResult('✅ Demo: Daten würden neu geladen werden');
+                     }, 1000);
+                   }}
+                   disabled={isLoading}
+                   className="w-full rounded-lg bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700 transition-colors disabled:opacity-50"
+                 >
+                   {isLoading ? 'Lade...' : 'Neu laden (Demo)'}
+                 </button>
+               </div>
+             </div>
+
             {testResult && (
-              <div className="bg-white/10 rounded-lg p-4 border border-white/20">
-                <h3 className="text-sm font-medium text-white mb-2">Test-Ergebnis:</h3>
-                <p className="text-sm text-gray-300">{testResult}</p>
+              <div className="mt-4 p-3 rounded-lg bg-white/10">
+                <p className="text-sm text-white">{testResult}</p>
               </div>
             )}
           </div>
@@ -259,146 +201,66 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        {/* Search Bar */}
-        <div className="mb-8">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Fahndungen durchsuchen..."
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-10 py-3 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+        <div className="space-y-8">
+          {/* Hero Section */}
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-white mb-4">
+              Willkommen beim Fahndungssystem
+            </h1>
+            <p className="text-xl text-gray-300 mb-8">
+              Professionelle 3D-Flip-Karten für effiziente Fahndungen
+            </p>
+            <div className="flex items-center justify-center space-x-4">
+              <button 
+                onClick={handleDashboard}
+                className="flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white font-medium hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-5 w-5" />
+                <span>Neue Fahndung erstellen</span>
+              </button>
+              <button 
+                onClick={handleTestPage}
+                className="flex items-center space-x-2 rounded-lg bg-gray-600 px-6 py-3 text-white font-medium hover:bg-gray-700 transition-colors"
+              >
+                <TestTube className="h-5 w-5" />
+                <span>Test-Seite anzeigen</span>
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Statistics */}
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-lg border border-white/10 bg-white/5 p-6">
-            <div className="flex items-center space-x-3">
-              <AlertTriangle className="h-6 w-6 text-red-500" />
-              <div>
-                <p className="text-sm text-gray-400">Aktive Fahndungen</p>
-                <p className="text-2xl font-bold text-white">
-                  {investigations?.filter(i => (i as Investigation).status === 'active').length ?? 0}
-                </p>
-              </div>
+          {/* Fahndungen Grid */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">
+                Aktuelle Fahndungen
+              </h2>
+                             <div className="flex items-center space-x-2 text-gray-400">
+                 <MapPin className="h-4 w-4" />
+                 <span className="text-sm">
+                   3 Demo-Fahndungen verfügbar
+                 </span>
+               </div>
             </div>
-          </div>
-          <div className="rounded-lg border border-white/10 bg-white/5 p-6">
-            <div className="flex items-center space-x-3">
-              <User className="h-6 w-6 text-blue-500" />
-              <div>
-                <p className="text-sm text-gray-400">Vermisste Personen</p>
-                <p className="text-2xl font-bold text-white">
-                  {investigations?.filter(i => (i as Investigation).tags?.includes('vermisst')).length ?? 0}
-                </p>
-              </div>
+            
+            {/* Professionelle 3D-Flip-Karten */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mockFahndungen.map((fahndung, index) => (
+                <FahndungCard 
+                  key={fahndung.id}
+                  fahndung={fahndung}
+                  isNew={index === 0}
+                  isFeatured={index === 1}
+                />
+              ))}
             </div>
-          </div>
-          <div className="rounded-lg border border-white/10 bg-white/5 p-6">
-            <div className="flex items-center space-x-3">
-              <MapPin className="h-6 w-6 text-green-500" />
-              <div>
-                <p className="text-sm text-gray-400">Standorte</p>
-                <p className="text-2xl font-bold text-white">
-                  {investigations?.filter(i => (i as Investigation).location).length ?? 0}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Investigations List */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white">Aktuelle Fahndungen</h2>
-            <div className="flex items-center space-x-2 text-sm text-gray-400">
-              <Eye className="h-4 w-4" />
-              <span>{investigations?.length ?? 0} Fahndungen</span>
-            </div>
+                         {/* Demo-Hinweis */}
+             <div className="mt-8 text-center">
+               <p className="text-gray-400 text-sm">
+                 Diese Seite zeigt professionelle 3D-Flip-Karten mit NEU-Badges und Wizard-Integration
+               </p>
+             </div>
           </div>
-          
-          {investigations && investigations.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {investigations.map((investigation) => {
-                const inv = investigation as Investigation;
-                return (
-                  <div
-                    key={inv.id}
-                    className="rounded-lg border border-white/10 bg-white/5 p-6 hover:bg-white/10 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white mb-2">
-                          {inv.title}
-                        </h3>
-                        <p className="text-sm text-gray-400 line-clamp-2">
-                          {inv.description}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end space-y-1">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          inv.priority === 'high' 
-                            ? 'bg-red-500/20 text-red-400' 
-                            : inv.priority === 'medium'
-                            ? 'bg-yellow-500/20 text-yellow-400'
-                            : 'bg-green-500/20 text-green-400'
-                        }`}>
-                          {inv.priority}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          inv.status === 'active' 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-gray-500/20 text-gray-400'
-                        }`}>
-                          {inv.status}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {inv.location && (
-                      <div className="flex items-center space-x-2 mb-3">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-400">{inv.location}</span>
-                      </div>
-                    )}
-                    
-                    {inv.tags && inv.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {inv.tags.slice(0, 3).map((tag: string, index: number) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {inv.tags.length > 3 && (
-                          <span className="px-2 py-1 rounded-full bg-gray-500/20 text-gray-400 text-xs">
-                            +{inv.tags.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="mt-4 text-xs text-gray-500">
-                      Erstellt: {new Date(inv.created_at).toLocaleDateString('de-DE')}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-400 mb-2">
-                Keine Fahndungen gefunden
-              </h3>
-              <p className="text-gray-500">
-                Erstellen Sie Ihre erste Fahndung, um zu beginnen.
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </main>
