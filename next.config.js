@@ -15,6 +15,9 @@ const config = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  // Zusätzliche Konfiguration für bessere Build-Stabilität
+  output: 'standalone',
+  poweredByHeader: false,
 };
 
 export default config;
