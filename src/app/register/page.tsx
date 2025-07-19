@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Building, Phone, ArrowLeft } from 'lucide-react';
 import { supabase } from '~/lib/supabase';
-import { sendRegistrationNotification } from '~/lib/email-notifications';
+
 
 export default function Register() {
   const [formData, setFormData] = useState({

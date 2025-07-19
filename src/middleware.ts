@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function middleware(_request: NextRequest) {
   // Einfache Middleware für Supabase Auth
   // Session-Handling wird in den Komponenten gemacht
   return NextResponse.next()

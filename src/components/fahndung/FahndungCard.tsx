@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Eye, MapPin, Calendar, AlertTriangle, Clock } from 'lucide-react'
+import { Eye, MapPin, Calendar, Clock } from 'lucide-react'
 import type { FahndungCardProps } from '@/types/fahndung'
 import { FAHNDUNG_TYP_LABELS, FAHNDUNG_PRIORITAET_LABELS } from '@/types/fahndung'
 

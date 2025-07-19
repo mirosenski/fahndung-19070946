@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react'
+
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AlertTriangle, User, LogIn, Plus } from 'lucide-react'
@@ -13,7 +13,7 @@ export default function Home() {
   };
 
   const handleLogin = () => {
-    router.push('/auth/login');
+    router.push('/login');
   };
 
   const handleWizard = () => {

@@ -28,7 +28,6 @@ import {
   Clock
 } from 'lucide-react';
 import { api } from '~/trpc/react';
-import { supabase } from '~/lib/supabase';
 import { 
   getCurrentSession, 
   signOut, 
@@ -270,12 +269,12 @@ export default function Dashboard() {
     }
   };
 
-  const handleApproveRegistration = async (registrationId: string, notes?: string) => {
+  const handleApproveRegistration = async (_registrationId: string, _notes?: string) => {
     // TEMPORÄR: pending_registrations deaktiviert
     alert('Registrierungsgenehmigung ist temporär deaktiviert. Bitte implementiere pending_registrations Tabelle.');
   };
 
-  const handleRejectRegistration = async (registrationId: string, notes?: string) => {
+  const handleRejectRegistration = async (_registrationId: string, _notes?: string) => {
     // TEMPORÄR: pending_registrations deaktiviert
     alert('Registrierungsablehnung ist temporär deaktiviert. Bitte implementiere pending_registrations Tabelle.');
   };
