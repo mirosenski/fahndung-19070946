@@ -68,57 +68,55 @@ export default function Register() {
         return;
       }
       
-      // Speichere Registrierung in pending_registrations
-      const result = await supabase
-        .from('pending_registrations')
-        .insert({
-          email: formData.email,
-          name: formData.name,
-          department: formData.department || 'Allgemein',
-          phone: formData.phone,
-          password_hash: formData.password, // In Produktion sollte das gehasht werden
-          status: 'pending'
-        })
-        .select()
-        .single();
+      // TEMPORÄR: Direkte Benutzererstellung statt pending_registrations
+      // TODO: Implementiere pending_registrations nach SQL-Setup
+      
+      // Erstelle Benutzer direkt in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      });
 
-      const registrationData = result.data as { id: string } | null;
-      const registrationError = result.error;
-
-      if (registrationError) {
-        console.error('Registrierungs-Fehler:', registrationError);
-        if (registrationError.message.includes('duplicate key')) {
+      if (authError) {
+        console.error('Auth-Fehler:', authError);
+        if (authError.message.includes('duplicate')) {
           setError('Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an.');
         } else {
-          setError(`Registrierungs-Fehler: ${registrationError.message}`);
+          setError(`Registrierungs-Fehler: ${authError.message}`);
         }
         return;
       }
 
-      if (registrationData) {
-        console.log('Registrierung gespeichert:', registrationData.id ?? 'unknown');
-        
-        // E-Mail-Benachrichtigung an Super-Admin senden
-        try {
-          await sendRegistrationNotification({
-            userEmail: formData.email,
-            userName: formData.name,
+      // Erstelle Benutzer-Profil
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            user_id: authData.user.id,
+            email: formData.email,
+            name: formData.name,
+            role: 'user',
             department: formData.department || 'Allgemein',
             phone: formData.phone,
-            registrationDate: new Date().toLocaleString('de-DE')
+            is_active: true
           });
-          console.log('✅ E-Mail-Benachrichtigung an Super-Admin gesendet');
-        } catch (emailError) {
-          console.warn('E-Mail-Benachrichtigung fehlgeschlagen:', emailError);
+
+        if (profileError) {
+          console.error('Profil-Fehler:', profileError);
+          setError(`Fehler beim Erstellen des Profils: ${profileError.message}`);
+          return;
         }
-        
-        setError('✅ Registrierung erfolgreich eingereicht! Eine Bestätigungs-E-Mail wurde an ptlsweb@gmail.com gesendet. Bitte warten Sie auf die Genehmigung durch einen Administrator.');
-        
-        // Nach 3 Sekunden zur Login-Seite weiterleiten
-        setTimeout(() => {
-          router.push('/login');
-        }, 3000);
       }
+
+      // Erfolgreiche Registrierung
+      console.log('✅ Benutzer erfolgreich registriert:', authData.user?.id);
+      
+      setError('✅ Registrierung erfolgreich! Sie können sich jetzt anmelden.');
+      
+      // Nach 3 Sekunden zur Login-Seite weiterleiten
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
     } catch (error) {
       console.error('Unerwarteter Registrierungs-Fehler:', error);
       setError('Ein unerwarteter Fehler ist aufgetreten');

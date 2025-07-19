@@ -1,9 +1,10 @@
-import "~/styles/globals.css";
+import "./globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { SessionInitializer } from "~/components/SessionInitializer";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -22,7 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`}>
       <body suppressHydrationWarning={true}>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          <SessionInitializer />
+          {children}
+        </TRPCReactProvider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   AlertTriangle, 
   User, 
@@ -175,7 +176,7 @@ export default function Dashboard() {
   };
 
   const handleCreateInvestigation = () => {
-    router.push('/wizard');
+    router.push('/admin/wizard');
   };
 
   // Admin functions
@@ -183,15 +184,16 @@ export default function Dashboard() {
     if (!session?.profile || !isAdmin(session.profile)) return;
     
     try {
-      const [usersData, actionsData, registrationsData] = await Promise.all([
+      const [usersData, actionsData] = await Promise.all([
         getAllUsers(),
-        getAdminActions(),
-        supabase?.from('pending_registrations').select('*').eq('status', 'pending').order('created_at', { ascending: false })
+        getAdminActions()
+        // TEMPORÄR: pending_registrations deaktiviert
+        // supabase?.from('pending_registrations').select('*').eq('status', 'pending').order('created_at', { ascending: false })
       ]);
       
       setUsers(usersData);
       setAdminActions(actionsData);
-      setPendingRegistrations(registrationsData?.data ?? []);
+      setPendingRegistrations([]); // Leeres Array bis pending_registrations implementiert ist
     } catch (error) {
       console.error('Fehler beim Laden der Admin-Daten:', error);
     }
@@ -269,45 +271,13 @@ export default function Dashboard() {
   };
 
   const handleApproveRegistration = async (registrationId: string, notes?: string) => {
-    try {
-      if (!supabase) return;
-      
-      const { error } = await supabase.rpc('approve_registration', {
-        registration_id: registrationId,
-        admin_notes: notes
-      });
-      
-      if (error) {
-        console.error('Fehler beim Genehmigen:', error);
-        alert('Fehler beim Genehmigen der Registrierung');
-      } else {
-        alert('Registrierung erfolgreich genehmigt!');
-        await loadAdminData();
-      }
-    } catch (error) {
-      console.error('Fehler beim Genehmigen der Registrierung:', error);
-    }
+    // TEMPORÄR: pending_registrations deaktiviert
+    alert('Registrierungsgenehmigung ist temporär deaktiviert. Bitte implementiere pending_registrations Tabelle.');
   };
 
   const handleRejectRegistration = async (registrationId: string, notes?: string) => {
-    try {
-      if (!supabase) return;
-      
-      const { error } = await supabase.rpc('reject_registration', {
-        registration_id: registrationId,
-        admin_notes: notes
-      });
-      
-      if (error) {
-        console.error('Fehler beim Ablehnen:', error);
-        alert('Fehler beim Ablehnen der Registrierung');
-      } else {
-        alert('Registrierung erfolgreich abgelehnt!');
-        await loadAdminData();
-      }
-    } catch (error) {
-      console.error('Fehler beim Ablehnen der Registrierung:', error);
-    }
+    // TEMPORÄR: pending_registrations deaktiviert
+    alert('Registrierungsablehnung ist temporär deaktiviert. Bitte implementiere pending_registrations Tabelle.');
   };
 
   // Load admin data when session is available and user is admin
@@ -359,10 +329,10 @@ export default function Dashboard() {
       <header className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
               <AlertTriangle className="h-8 w-8 text-red-500" />
-              <h1 className="text-2xl font-bold text-white">Fahndung Dashboard</h1>
-            </div>
+              <h1 className="text-2xl font-bold text-white">Fahndung</h1>
+            </Link>
         
                           <div className="flex items-center space-x-4">
                 {/* User Info */}

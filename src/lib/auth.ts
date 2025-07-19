@@ -86,6 +86,38 @@ export const isEditor = (profile: UserProfile | null): boolean => {
   return hasRole(profile, 'editor');
 };
 
+// Supabase-Session initialisieren
+export const initializeSession = async (): Promise<void> => {
+  if (!supabase) {
+    console.error('❌ Supabase ist nicht konfiguriert');
+    return;
+  }
+
+  try {
+    console.log('🔄 Initialisiere Supabase-Session...');
+    
+    // Session initialisieren
+    const { data, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('❌ Fehler bei Session-Initialisierung:', error);
+      
+      // Bei Refresh Token Problemen: Session zurücksetzen
+      if (error.message.includes('Invalid Refresh Token') || 
+          error.message.includes('Refresh Token Not Found')) {
+        console.log('🔄 Ungültiger Refresh Token - setze Session zurück...');
+        await supabase.auth.signOut();
+      }
+    } else if (data.session) {
+      console.log('✅ Session erfolgreich initialisiert');
+    } else {
+      console.log('ℹ️ Keine aktive Session gefunden');
+    }
+  } catch (error) {
+    console.error('❌ Fehler bei Session-Initialisierung:', error);
+  }
+};
+
 // Aktuelle Session abrufen
 export const getCurrentSession = async (): Promise<Session | null> => {
   if (!supabase) {
@@ -101,6 +133,15 @@ export const getCurrentSession = async (): Promise<Session | null> => {
     
     if (sessionError) {
       console.error('❌ Session-Fehler:', sessionError);
+      
+      // Bei Refresh Token Fehlern: Session zurücksetzen
+      if (sessionError.message.includes('Invalid Refresh Token') || 
+          sessionError.message.includes('Refresh Token Not Found')) {
+        console.log('🔄 Refresh Token ungültig - setze Session zurück...');
+        await supabase.auth.signOut();
+        return null;
+      }
+      
       return null;
     }
     

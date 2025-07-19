@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   Users, Shield, Activity, Clock, Eye, Edit, Trash2, 
   UserCheck, UserX, Crown, BarChart3,
-  Search
+  Search, AlertTriangle
 } from 'lucide-react';
 import { 
   getCurrentSession, getAllUsers, getUserActivity, getUserSessions,
@@ -170,10 +171,10 @@ export default function AdminDashboard() {
       <header className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Shield className="h-8 w-8 text-red-500" />
-              <h1 className="text-2xl font-bold text-white">Super Admin Dashboard</h1>
-            </div>
+            <Link href="/" className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
+              <AlertTriangle className="h-8 w-8 text-red-500" />
+              <h1 className="text-2xl font-bold text-white">Fahndung</h1>
+            </Link>
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-white">
