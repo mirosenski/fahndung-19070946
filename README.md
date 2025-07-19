@@ -1,220 +1,183 @@
-# Fahndung-System
+# Supabase CLI
 
-Ein modernes Fahndung-System mit Supabase-Integration, Next.js 15 und TypeScript.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-## 🚀 Features
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-- **Supabase-Integration**: Vollständige Datenbank-Integration mit Real-time Updates
-- **Moderne UI**: Dark Mode mit Glassmorphism-Design
-- **TypeScript**: Vollständig typisiert für bessere Entwicklererfahrung
-- **tRPC**: Typsichere API-Kommunikation
-- **Lucide Icons**: Konsistente Icon-Bibliothek
-- **Responsive Design**: Optimiert für alle Geräte
+This repository contains all the functionality for Supabase CLI.
 
-## 🛠️ Technologie-Stack
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-- **Frontend**: Next.js 15, React 18, TypeScript
-- **Backend**: tRPC, Supabase
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **Datenbank**: PostgreSQL (Supabase)
+## Getting started
 
-## 📋 Voraussetzungen
+### Install the CLI
 
-- Node.js 18+ 
-- pnpm (empfohlen) oder npm
-- Supabase-Account
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
-## 🚀 Installation
-
-1. **Repository klonen**
 ```bash
-git clone <repository-url>
-cd fahndung
+npm i supabase --save-dev
 ```
 
-2. **Dependencies installieren**
+To install the beta release channel:
+
 ```bash
-pnpm install
+npm i supabase@beta --save-dev
 ```
 
-3. **Supabase-Projekt einrichten**
-   - Gehe zu [supabase.com](https://supabase.com)
-   - Erstelle ein neues Projekt
-   - Notiere dir die Projekt-URL und den Anon Key
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-4. **Datenbank-Schema einrichten**
-   - Öffne das Supabase Dashboard
-   - Gehe zu "SQL Editor"
-   - Führe das SQL-Script aus `supabase-schema.sql` aus
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
 
-5. **Umgebungsvariablen konfigurieren**
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
+
+<details>
+  <summary><b>macOS</b></summary>
+
+  Available via [Homebrew](https://brew.sh). To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Windows</b></summary>
+
+  Available via [Scoop](https://scoop.sh). To install:
+
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
+
+  To upgrade:
+
+  ```powershell
+  scoop update supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Linux</b></summary>
+
+  Available via [Homebrew](https://brew.sh) and Linux packages.
+
+  #### via Homebrew
+
+  To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+
+  #### via Linux packages
+
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
+
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
 ```bash
-cp fahndung-alt/env.example .env.local
+supabase bootstrap
 ```
 
-Bearbeite `.env.local` und setze deine Supabase-Credentials:
+Or using npx:
+
 ```bash
-# Ersetze [YOUR-PASSWORD] mit deinem Supabase-Datenbankpasswort
-DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.rgbxdxrhwrszidbnsmuy.supabase.co:5432/postgres"
-
-# Ersetze mit deinen eigenen Supabase-Credentials
-NEXT_PUBLIC_SUPABASE_URL="https://deine-projekt-url.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="dein-anon-key"
+npx supabase bootstrap
 ```
 
-6. **Entwicklungsserver starten**
-```bash
-pnpm dev
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
 ```
-
-Die Anwendung ist jetzt unter `http://localhost:3001` verfügbar.
-
-## 📁 Projektstruktur
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── dashboard/         # Dashboard-Seite
-│   ├── login/            # Login-Seite
-│   └── page.tsx          # Hauptseite
-├── components/            # React-Komponenten
-├── lib/                   # Utility-Funktionen
-│   └── supabase.ts       # Supabase-Client
-├── server/                # Server-seitiger Code
-│   ├── api/              # tRPC API
-│   └── db.ts             # Datenbank-Konfiguration
-└── trpc/                 # tRPC-Client
-```
-
-## 🔧 API-Endpunkte
-
-### Fahndungen
-- `GET /api/trpc/post.getInvestigations` - Fahndungen abrufen
-- `POST /api/trpc/post.createInvestigation` - Neue Fahndung erstellen
-- `PUT /api/trpc/post.updateInvestigation` - Fahndung aktualisieren
-- `DELETE /api/trpc/post.deleteInvestigation` - Fahndung löschen
-
-### Bilder
-- `GET /api/trpc/post.getInvestigationImages` - Bilder zu einer Fahndung abrufen
-- `POST /api/trpc/post.addInvestigationImage` - Bild zu einer Fahndung hinzufügen
-
-## 🎨 Design-System
-
-Das Projekt verwendet ein konsistentes Design-System:
-
-- **Farben**: Dark Mode mit Purple/Slate-Gradient
-- **Komponenten**: Glassmorphism-Effekte mit Backdrop-Blur
-- **Icons**: Lucide React für konsistente Iconographie
-- **Typography**: Tailwind CSS für responsive Typografie
-
-## 🔐 Authentifizierung
-
-Die Anwendung unterstützt Supabase-Authentifizierung:
-
-- **Login**: `/login` - Anmeldung und Registrierung
-- **Session-Management**: Automatische Session-Verwaltung
-- **Protected Routes**: Geschützte Routen für authentifizierte Benutzer
-
-## 📊 Datenbank-Schema
-
-### Tabellen
-
-#### `investigations`
-- `id` (UUID, Primary Key)
-- `title` (VARCHAR)
-- `description` (TEXT)
-- `status` (VARCHAR, Default: 'active')
-- `priority` (VARCHAR, Default: 'medium')
-- `tags` (TEXT[])
-- `location` (VARCHAR)
-- `contact_info` (JSONB)
-- `created_at` (TIMESTAMP)
-- `updated_at` (TIMESTAMP)
-
-#### `investigation_images`
-- `id` (UUID, Primary Key)
-- `investigation_id` (UUID, Foreign Key)
-- `file_name` (VARCHAR)
-- `file_path` (VARCHAR)
-- `file_size` (INTEGER)
-- `mime_type` (VARCHAR)
-- `width` (INTEGER)
-- `height` (INTEGER)
-- `tags` (TEXT[])
-- `description` (TEXT)
-- `is_primary` (BOOLEAN)
-- `uploaded_at` (TIMESTAMP)
-
-## 🚀 Deployment
-
-### Vercel (Empfohlen)
-
-1. Verbinde dein Repository mit Vercel
-2. Setze die Umgebungsvariablen in Vercel
-3. Deploy automatisch bei Git-Push
-
-### Andere Plattformen
-
-Das Projekt kann auf jeder Node.js-Plattform deployed werden:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-
-## 🐛 Fehlerbehebung
-
-### "Supabase URL und Anon Key müssen in den Umgebungsvariablen gesetzt sein"
-- Überprüfe `.env.local`
-- Stelle sicher, dass die Variablen korrekt gesetzt sind
-
-### "Table does not exist"
-- Führe das SQL-Schema in Supabase aus
-- Überprüfe die Tabellen-Namen
-
-### "Permission denied"
-- Überprüfe die RLS-Policies in Supabase
-- Stelle sicher, dass anonyme Benutzer Zugriff haben
-
-## 📝 Entwicklung
-
-### Neue Features hinzufügen
-
-1. **tRPC-Router erweitern**
-```typescript
-// src/server/api/routers/post.ts
-export const postRouter = createTRPCRouter({
-  // Neue Endpunkte hier hinzufügen
-});
-```
-
-2. **Neue Komponenten erstellen**
-```typescript
-// src/components/NewComponent.tsx
-export function NewComponent() {
-  return <div>Neue Komponente</div>;
-}
-```
-
-3. **Supabase-Client erweitern**
-```typescript
-// src/lib/supabase.ts
-// Neue Funktionen hier hinzufügen
-```
-
-## 🤝 Beitragen
-
-1. Fork das Repository
-2. Erstelle einen Feature-Branch
-3. Committe deine Änderungen
-4. Erstelle einen Pull Request
-
-## 📄 Lizenz
-
-Dieses Projekt ist unter der MIT-Lizenz lizenziert.
-
-## 🆘 Support
-
-Bei Fragen oder Problemen:
-1. Überprüfe die Dokumentation
-2. Schaue in die Issues
-3. Erstelle ein neues Issue mit detaillierter Beschreibung

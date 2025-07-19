@@ -117,7 +117,7 @@ export default function Dashboard() {
   });
 
   // tRPC Queries
-  const { data: investigationsData } = api.post.getInvestigations.useQuery({
+  const { data: investigationsData } = api.fahndung.getInvestigations.useQuery({
     limit: 100,
     offset: 0
   });
