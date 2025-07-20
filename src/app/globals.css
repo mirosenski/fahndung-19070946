@@ -3,48 +3,71 @@
 
 /* ===== GLOBALE VARIABLEN ===== */
 :root {
-  /* Hauptfarben */
-  --primary-blue: #3b82f6;
-  --primary-blue-hover: #2563eb;
-  --primary-green: #10b981;
-  --primary-green-hover: #059669;
-  --primary-red: #ef4444;
-  --primary-red-hover: #dc2626;
-  --primary-yellow: #f59e0b;
-  --primary-yellow-hover: #d97706;
-  --primary-purple: #8b5cf6;
-  --primary-purple-hover: #7c3aed;
+  /* Theme Farben (Light Mode) */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 10%;
 
-  /* Grau-Skala */
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 10%;
 
-  /* Transparenz */
-  --white-5: rgba(255, 255, 255, 0.05);
-  --white-10: rgba(255, 255, 255, 0.1);
-  --white-20: rgba(255, 255, 255, 0.2);
-  --white-40: rgba(255, 255, 255, 0.4);
-  --white-50: rgba(255, 255, 255, 0.5);
-  --white-80: rgba(255, 255, 255, 0.8);
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 10%;
 
-  /* Schatten */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --primary: 242 80% 60%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 240 10% 20%;
+
+  --muted: 240 4% 95%;
+  --muted-foreground: 240 5% 40%;
+
+  --accent: 242 80% 95%;
+  --accent-foreground: 242 80% 30%;
+
+  --destructive: 0 85% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 242 80% 60%;
+
+  --radius: 0.5rem;
 
   /* Animationen */
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 300ms ease-in-out;
   --transition-slow: 500ms ease-in-out;
+}
+
+.dark {
+  --background: 240 10% 10%;
+  --foreground: 0 0% 100%;
+
+  --card: 240 10% 20%;
+  --card-foreground: 0 0% 100%;
+
+  --popover: 240 10% 20%;
+  --popover-foreground: 0 0% 100%;
+
+  --primary: 242 80% 60%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 240 5% 30%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 240 5% 40%;
+  --muted-foreground: 0 0% 100%;
+
+  --accent: 242 80% 30%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 63% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 240 5% 50%;
+  --input: 240 5% 50%;
+  --ring: 242 80% 60%;
 }
 
 /* ===== BASIS-STILE ===== */
@@ -55,9 +78,13 @@
 body {
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
-  color: white;
-  background: linear-gradient(135deg, #1e293b 0%, #7c3aed 50%, #1e293b 100%);
-  min-height: 100vh;
+  @apply bg-background text-foreground min-h-screen;
+  background-image: linear-gradient(
+    135deg,
+    hsl(var(--background)) 0%,
+    hsl(var(--primary)) 50%,
+    hsl(var(--background)) 100%
+  );
 }
 
 /* ===== EINHEITLICHE KOMPONENTEN ===== */
@@ -69,28 +96,28 @@ body {
 }
 
 .btn-primary {
-  @apply bg-blue-600 text-white hover:bg-blue-700;
-  @apply focus:ring-blue-500;
+  @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  @apply focus:ring-ring;
 }
 
 .btn-secondary {
-  @apply bg-gray-600 text-white hover:bg-gray-700;
-  @apply focus:ring-gray-500;
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  @apply focus:ring-ring;
 }
 
 .btn-success {
   @apply bg-green-600 text-white hover:bg-green-700;
-  @apply focus:ring-green-500;
+  @apply focus:ring-ring;
 }
 
 .btn-danger {
-  @apply bg-red-600 text-white hover:bg-red-700;
-  @apply focus:ring-red-500;
+  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  @apply focus:ring-ring;
 }
 
 .btn-warning {
   @apply bg-yellow-600 text-white hover:bg-yellow-700;
-  @apply focus:ring-yellow-500;
+  @apply focus:ring-ring;
 }
 
 .btn-outline {
@@ -117,17 +144,17 @@ body {
 
 /* Card-Stile */
 .card {
-  @apply bg-white/5 backdrop-blur-sm rounded-lg border border-white/10;
+  @apply bg-card text-card-foreground backdrop-blur-sm rounded-lg border border-border;
   @apply transition-all duration-300;
 }
 
 .card-hover {
-  @apply hover:bg-white/10 hover:border-white/20;
+  @apply hover:bg-accent/20 hover:border-accent;
 }
 
 .card-interactive {
-  @apply cursor-pointer hover:bg-white/10 hover:border-white/20;
-  @apply active:bg-white/15 active:scale-95;
+  @apply cursor-pointer hover:bg-accent/20 hover:border-accent;
+  @apply active:bg-accent/30 active:scale-95;
 }
 
 /* Badge-Stile */

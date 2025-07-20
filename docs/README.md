@@ -60,4 +60,11 @@ pnpm start
 ### Sicherheit
 - Row Level Security (RLS) aktiviert
 - Environment Variables über Vercel verwaltet
-- Auth-Guards für geschützte Routen 
+- Auth-Guards für geschützte Routen
+
+## 🎨 Theme und Farbpalette
+
+Die Anwendung nutzt eine moderne Tailwind-Konfiguration mit HSL-basierten CSS Variablen.
+Der `ThemeProvider` erkennt das System-Theme und erlaubt einen manuellen Wechsel
+zwischen Hell- und Dunkelmodus. Die Farbwerte sind in `globals.css` definiert und
+werden in `tailwind.config.js` eingebunden.
