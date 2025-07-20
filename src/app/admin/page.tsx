@@ -21,7 +21,6 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [userActivity, setUserActivity] = useState<UserActivity[]>([]);
-  const [userSessions, setUserSessions] = useState<UserSession[]>([]);
   const [adminActions, setAdminActions] = useState<AdminAction[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
@@ -117,20 +116,23 @@ export default function AdminDashboard() {
         getUserSessions(user.user_id)
       ]);
       setUserActivity(activity);
-      setUserSessions(sessions);
     } catch (error) {
       console.error('Fehler beim Laden der Benutzerdetails:', error);
     }
   };
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const emailMatch =
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
+    const nameMatch =
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
+    const matchesSearch = [emailMatch, nameMatch].some(Boolean);
     const matchesRole = filterRole === 'all' || user.role === filterRole;
-    const matchesStatus = filterStatus === 'all' || 
-                         (filterStatus === 'active' && user.is_active) ||
-                         (filterStatus === 'blocked' && !user.is_active);
-    
+    const matchesStatus =
+      filterStatus === 'all' ||
+      (filterStatus === 'active' && user.is_active) ||
+      (filterStatus === 'blocked' && !user.is_active);
+
     return matchesSearch && matchesRole && matchesStatus;
   });
 
@@ -352,13 +354,13 @@ export default function AdminDashboard() {
                             <div className="flex-shrink-0 h-10 w-10">
                               <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
                                 <span className="text-white font-medium">
-                                  {user.name?.charAt(0) || user.email.charAt(0)}
+                                  {user.name?.charAt(0) ?? user.email.charAt(0)}
                                 </span>
                               </div>
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-white">
-                                {user.name || 'Unbekannt'}
+                                {user.name ?? 'Unbekannt'}
                               </div>
                               <div className="text-sm text-gray-400">
                                 {user.email}
@@ -463,7 +465,7 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             <div className="bg-white/5 rounded-lg p-6 border border-white/10">
               <h3 className="text-lg font-semibold text-white mb-4">
-                Aktivität für {selectedUser.name || selectedUser.email}
+                Aktivität für {selectedUser.name ?? selectedUser.email}
               </h3>
               
               <div className="space-y-4">
@@ -471,7 +473,7 @@ export default function AdminDashboard() {
                   <div key={activity.id} className="flex items-center space-x-4 p-4 bg-white/5 rounded-lg">
                     <Activity className="h-5 w-5 text-blue-500" />
                     <div className="flex-1">
-                      <div className="text-sm text-white">{activity.description || activity.activity_type}</div>
+                      <div className="text-sm text-white">{activity.description ?? activity.activity_type}</div>
                       <div className="text-xs text-gray-400">
                         {new Date(activity.created_at).toLocaleString('de-DE')}
                       </div>
@@ -523,10 +525,10 @@ export default function AdminDashboard() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                          {action.target_user_id || action.target_investigation_id || '-'}
+                          {action.target_user_id ?? action.target_investigation_id ?? '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                          {action.description || '-'}
+                          {action.description ?? '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                           {new Date(action.created_at).toLocaleString('de-DE')}
