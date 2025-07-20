@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Building, Phone, ArrowLeft } from 'lucide-react';
 import { supabase } from '~/lib/supabase';
-import { sendRegistrationNotification } from '~/lib/email-notifications';
+
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -68,88 +68,55 @@ export default function Register() {
         return;
       }
       
-      // Registrierung mit vollständigen Daten
-      const { data, error } = await supabase.auth.signUp({
+      // TEMPORÄR: Direkte Benutzererstellung statt pending_registrations
+      // TODO: Implementiere pending_registrations nach SQL-Setup
+      
+      // Erstelle Benutzer direkt in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            name: formData.name,
-            department: formData.department,
-            phone: formData.phone,
-            role: 'user',
-            status: 'pending',
-            registration_email: formData.email
-          }
-        }
       });
 
-      if (error) {
-        console.error('Registrierungs-Fehler:', error);
-        if (error.message.includes('already registered')) {
+      if (authError) {
+        console.error('Auth-Fehler:', authError);
+        if (authError.message.includes('duplicate')) {
           setError('Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an.');
-        } else if (error.message.includes('password')) {
-          setError('Das Passwort muss mindestens 6 Zeichen lang sein.');
-        } else if (error.message.includes('email')) {
-          setError('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
         } else {
-          setError(`Registrierungs-Fehler: ${error.message}`);
+          setError(`Registrierungs-Fehler: ${authError.message}`);
         }
-      } else if (data.user) {
-        console.log('User erstellt:', data.user.id);
-        
-        // Versuche User-Profil zu erstellen
-        try {
-          const profileData = {
-            user_id: data.user.id,
+        return;
+      }
+
+      // Erstelle Benutzer-Profil
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            user_id: authData.user.id,
             email: formData.email,
             name: formData.name,
             role: 'user',
-            status: 'pending',
-            registration_email: formData.email,
             department: formData.department || 'Allgemein',
-            phone: formData.phone
-          };
-          
-          console.log('Versuche Profil zu erstellen:', profileData);
-          
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert(profileData);
+            phone: formData.phone,
+            is_active: true
+          });
 
-          if (profileError) {
-            console.warn('Profil-Erstellung fehlgeschlagen (wird später erstellt):', profileError.message);
-                  } else {
-          console.log('Profil erfolgreich erstellt');
+        if (profileError) {
+          console.error('Profil-Fehler:', profileError);
+          setError(`Fehler beim Erstellen des Profils: ${profileError.message}`);
+          return;
         }
-      } catch (profileError) {
-        console.warn('Profil-Erstellung Exception (wird später erstellt):', profileError);
       }
+
+      // Erfolgreiche Registrierung
+      console.log('✅ Benutzer erfolgreich registriert:', authData.user?.id);
       
-      // E-Mail-Benachrichtigung an Super-Admin senden
-      try {
-        await sendRegistrationNotification({
-          userEmail: formData.email,
-          userName: formData.name,
-          department: formData.department || 'Allgemein',
-          phone: formData.phone,
-          registrationDate: new Date().toLocaleString('de-DE')
-        });
-        console.log('✅ E-Mail-Benachrichtigung an Super-Admin gesendet');
-      } catch (emailError) {
-        console.warn('E-Mail-Benachrichtigung fehlgeschlagen:', emailError);
-      }
-      
-      setError('✅ Registrierung erfolgreich! Eine Bestätigungs-E-Mail wurde an ptlsweb@gmail.com gesendet. Bitte warten Sie auf die Genehmigung.');
+      setError('✅ Registrierung erfolgreich! Sie können sich jetzt anmelden.');
       
       // Nach 3 Sekunden zur Login-Seite weiterleiten
       setTimeout(() => {
         router.push('/login');
       }, 3000);
-      } else {
-        setError('✅ Registrierung erfolgreich! Eine Bestätigungs-E-Mail wurde an ptlsweb@gmail.com gesendet. Bitte warten Sie auf die Genehmigung.');
-      }
     } catch (error) {
       console.error('Unerwarteter Registrierungs-Fehler:', error);
       setError('Ein unerwarteter Fehler ist aufgetreten');

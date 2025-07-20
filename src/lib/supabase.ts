@@ -3,9 +3,22 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Bedingte Supabase-Initialisierung
+// Bedingte Supabase-Initialisierung mit verbesserten Auth-Einstellungen
 export const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        // Automatisches Token-Refresh aktivieren
+        autoRefreshToken: true,
+        // Persistierung der Session in localStorage
+        persistSession: true,
+        // Debug-Modus für bessere Fehlerdiagnose
+        debug: process.env.NODE_ENV === 'development',
+        // Storage-Key für die Session
+        storageKey: 'fahndung-auth-token',
+        // Flow-Typ für die Authentifizierung
+        flowType: 'pkce'
+      }
+    })
   : null
 
 // Typen für Real-time Updates

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Shield, Crown, Database } from 'lucide-react';
 import { supabase } from '~/lib/supabase';
-import { createDemoUsers } from '~/lib/auth';
+import { createDemoUsers, initializeSession } from '~/lib/auth';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -26,6 +26,9 @@ export default function Login() {
         return;
       }
       
+      // Session initialisieren vor dem Login
+      await initializeSession();
+      
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -35,6 +38,9 @@ export default function Login() {
         console.error('Login-Fehler:', error);
         if (error.message.includes('Invalid login credentials')) {
           setError('Ungültige Anmeldedaten. Bitte überprüfen Sie E-Mail und Passwort.');
+        } else if (error.message.includes('Invalid Refresh Token') || 
+                   error.message.includes('Refresh Token Not Found')) {
+          setError('Session-Fehler. Bitte versuchen Sie es erneut.');
         } else {
           setError(`Login-Fehler: ${error.message}`);
         }

@@ -1,5 +1,5 @@
 import { createTRPCRouter, createCallerFactory } from "~/server/api/trpc";
-import { postRouter } from "~/server/api/routers/post";
+import { fahndungRouter } from "~/server/api/routers/fahndung";
 import { authRouter } from "~/server/api/routers/auth";
 
 /**
@@ -8,7 +8,7 @@ import { authRouter } from "~/server/api/routers/auth";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  post: postRouter,
+  fahndung: fahndungRouter,
   auth: authRouter,
 });
 

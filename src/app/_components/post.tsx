@@ -5,15 +5,15 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 
 export function LatestPost() {
-  const { data: investigations } = api.post.getInvestigations.useQuery({ limit: 1 });
+  const { data: investigations } = api.fahndung.getInvestigations.useQuery({ limit: 1 });
 
   const utils = api.useUtils();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   
-  const createInvestigation = api.post.createInvestigation.useMutation({
+  const createInvestigation = api.fahndung.createInvestigation.useMutation({
     onSuccess: async () => {
-      await utils.post.getInvestigations.invalidate();
+      await utils.fahndung.getInvestigations.invalidate();
       setTitle("");
       setDescription("");
     },

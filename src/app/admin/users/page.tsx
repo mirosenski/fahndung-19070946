@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  User, Check, X, Mail, Clock, AlertCircle, Crown, Shield, Settings, Trash2, 
-  Activity, Eye, Edit, Search, Filter, MoreHorizontal, Calendar, Phone, Building,
-  Globe, Wifi, WifiOff, Users, UserCheck, UserX, TrendingUp, BarChart3
+  User, Check, X, Mail, Clock, Crown, Shield, 
+  Activity, Eye, Search, Phone, Building,
+  Wifi, WifiOff, Users, TrendingUp, BarChart3, MoreHorizontal
 } from 'lucide-react';
 import { supabase } from '~/lib/supabase';
-import { getCurrentSession, type Session } from '~/lib/auth';
+import { getCurrentSession } from '~/lib/auth';
 import { sendUserConfirmationEmail } from '~/lib/email-notifications';
+import type { PostgrestError } from '@supabase/supabase-js';
 
 interface PendingUser {
   id: string;
@@ -71,7 +72,6 @@ export default function AdminUsersPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'pending' | 'all' | 'activities'>('dashboard');
-  const [currentUser, setCurrentUser] = useState<Session | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -79,37 +79,7 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<AllUser | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    void checkAuthAndLoadUsers();
-  }, []);
-
-  const checkAuthAndLoadUsers = async () => {
-    try {
-      const session = await getCurrentSession();
-      if (!session?.profile || session.profile.role !== 'admin') {
-        router.push('/login');
-        return;
-      }
-
-      setCurrentUser(session);
-      await loadAllData();
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      router.push('/login');
-    }
-  };
-
-  const loadAllData = async () => {
-    await Promise.all([
-      loadPendingUsers(),
-      loadAllUsers(),
-      loadUserActivities(),
-      loadDashboardStats()
-    ]);
-    setLoading(false);
-  };
-
-  const loadPendingUsers = async () => {
+  const loadPendingUsers = useCallback(async () => {
     try {
       if (!supabase) return;
 
@@ -129,9 +99,9 @@ export default function AdminUsersPage() {
       console.error('Error:', error);
       setError('Ein unerwarteter Fehler ist aufgetreten');
     }
-  };
+  }, []);
 
-  const loadAllUsers = async () => {
+  const loadAllUsers = useCallback(async () => {
     try {
       if (!supabase) return;
 
@@ -150,9 +120,9 @@ export default function AdminUsersPage() {
       console.error('Error:', error);
       setError('Ein unerwarteter Fehler ist aufgetreten');
     }
-  };
+  }, []);
 
-  const loadUserActivities = async () => {
+  const loadUserActivities = useCallback(async () => {
     try {
       if (!supabase) return;
 
@@ -171,9 +141,9 @@ export default function AdminUsersPage() {
     } catch (error) {
       console.warn('Error loading activities:', error);
     }
-  };
+  }, []);
 
-  const loadDashboardStats = async () => {
+  const loadDashboardStats = useCallback(async () => {
     try {
       if (!supabase) return;
 
@@ -194,7 +164,38 @@ export default function AdminUsersPage() {
     } catch (error) {
       console.error('Error loading dashboard stats:', error);
     }
-  };
+  }, [allUsers, pendingUsers, userActivities]);
+
+  const loadAllData = useCallback(async () => {
+    await Promise.all([
+      loadPendingUsers(),
+      loadAllUsers(),
+      loadUserActivities(),
+      loadDashboardStats()
+    ]);
+    setLoading(false);
+  }, [loadPendingUsers, loadAllUsers, loadUserActivities, loadDashboardStats]);
+
+  const checkAuthAndLoadUsers = useCallback(async () => {
+    try {
+      const session = await getCurrentSession();
+      if (!session?.profile || session.profile.role !== 'admin') {
+        router.push('/login');
+        return;
+      }
+
+      await loadAllData();
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      router.push('/login');
+    }
+  }, [router, loadAllData]);
+
+  useEffect(() => {
+    void checkAuthAndLoadUsers();
+  }, [checkAuthAndLoadUsers]);
+
+
 
   const approveUser = async (userId: string) => {
     try {
@@ -205,7 +206,7 @@ export default function AdminUsersPage() {
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .single() as { data: AllUser | null; error: PostgrestError | null };
 
       if (fetchError) {
         console.error('Error fetching user data:', fetchError);
@@ -228,11 +229,11 @@ export default function AdminUsersPage() {
       } else {
         // E-Mail-Bestätigung an Benutzer senden
         try {
-          await sendUserConfirmationEmail(
-            userData.registration_email || userData.email,
-            userData.name || 'Benutzer',
-            true // approved
-          );
+                      await sendUserConfirmationEmail(
+              userData?.email ?? '',
+              userData?.name ?? 'Benutzer',
+              true // approved
+            );
           console.log('✅ Bestätigungs-E-Mail an Benutzer gesendet');
         } catch (emailError) {
           console.warn('E-Mail-Bestätigung fehlgeschlagen:', emailError);
@@ -257,7 +258,7 @@ export default function AdminUsersPage() {
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .single() as { data: AllUser | null; error: PostgrestError | null };
 
       if (fetchError) {
         console.error('Error fetching user data:', fetchError);
@@ -278,8 +279,8 @@ export default function AdminUsersPage() {
         // E-Mail-Bestätigung an Benutzer senden
         try {
           await sendUserConfirmationEmail(
-            userData.registration_email ?? userData.email,
-            userData.name ?? 'Benutzer',
+            userData?.email ?? '',
+            userData?.name ?? 'Benutzer',
             false // rejected
           );
           console.log('✅ Ablehnungs-E-Mail an Benutzer gesendet');

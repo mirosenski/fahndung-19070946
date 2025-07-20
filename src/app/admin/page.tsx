@@ -2,21 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
-  Users, Shield, Activity, Clock, Eye, EyeOff, Edit, Trash2, 
-  UserCheck, UserX, Crown, Settings, BarChart3, AlertTriangle,
-  Search, Filter, MoreHorizontal, Calendar, MapPin, Mail
+  Users, Shield, Activity, Clock, Eye, Edit, Trash2, 
+  UserCheck, UserX, Crown, BarChart3,
+  Search, AlertTriangle
 } from 'lucide-react';
 import { 
   getCurrentSession, getAllUsers, getUserActivity, getUserSessions,
   blockUser, unblockUser, changeUserRole, deleteUser, getAdminActions,
-  logUserActivity, UserProfile, UserActivity, UserSession, AdminAction,
+  logUserActivity, type UserProfile, type UserActivity, type AdminAction,
   isAdmin
 } from '../../lib/auth';
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Awaited<ReturnType<typeof getCurrentSession>> | null>(null);
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -111,7 +112,7 @@ export default function AdminDashboard() {
   const loadUserDetails = async (user: UserProfile) => {
     setSelectedUser(user);
     try {
-      const [activity, sessions] = await Promise.all([
+      const [activity] = await Promise.all([
         getUserActivity(user.user_id),
         getUserSessions(user.user_id)
       ]);
@@ -122,17 +123,6 @@ export default function AdminDashboard() {
   };
 
   const filteredUsers = users.filter(user => {
-    const emailMatch =
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
-    const nameMatch =
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
-    const matchesSearch = [emailMatch, nameMatch].some(Boolean);
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
-    const matchesStatus =
-      filterStatus === 'all' ||
-      (filterStatus === 'active' && user.is_active) ||
-      (filterStatus === 'blocked' && !user.is_active);
-
     return matchesSearch && matchesRole && matchesStatus;
   });
 
@@ -166,10 +156,10 @@ export default function AdminDashboard() {
       <header className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Shield className="h-8 w-8 text-red-500" />
-              <h1 className="text-2xl font-bold text-white">Super Admin Dashboard</h1>
-            </div>
+            <Link href="/" className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
+              <AlertTriangle className="h-8 w-8 text-red-500" />
+              <h1 className="text-2xl font-bold text-white">Fahndung</h1>
+            </Link>
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-white">
