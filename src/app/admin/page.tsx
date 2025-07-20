@@ -22,7 +22,6 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [userActivity, setUserActivity] = useState<UserActivity[]>([]);
-  // const [userSessions, setUserSessions] = useState<UserSession[]>([]); // Removed - unused
   const [adminActions, setAdminActions] = useState<AdminAction[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
@@ -118,26 +117,12 @@ export default function AdminDashboard() {
         getUserSessions(user.user_id)
       ]);
       setUserActivity(activity);
-      // setUserSessions(sessions); // Removed - unused
     } catch (error) {
       console.error('Fehler beim Laden der Benutzerdetails:', error);
     }
   };
 
   const filteredUsers = users.filter(user => {
-    const emailMatch = user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
-    const nameMatch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
-    const matchesSearch = [emailMatch, nameMatch].some(Boolean);
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
-    let matchesStatus = false;
-    if (filterStatus === 'all') {
-      matchesStatus = true;
-    } else if (filterStatus === 'active') {
-      matchesStatus = !!user.is_active;
-    } else if (filterStatus === 'blocked') {
-      matchesStatus = !user.is_active;
-    }
-
     return matchesSearch && matchesRole && matchesStatus;
   });
 
